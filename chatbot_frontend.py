@@ -25,14 +25,21 @@ if input_user:
         # Display the user message
         st.write(input_user)
 
-    # Invoke the chatbot with the user message
-    response = chatbot.invoke({"messages": [HumanMessage(content = input_user)]}, config=CONFIG)
+    # # Invoke the chatbot with the user message
+    # response = chatbot.invoke({"messages": [HumanMessage(content = input_user)]}, config=CONFIG)
     
-    # Extract the AI response from the chatbot
-    ai_message = response["messages"][-1].content
+    # # Extract the AI response from the chatbot
+    # ai_message = response["messages"][-1].content
     
     # Add assistant message to the session state
-    st.session_state["message_history"].append({"role":"assistant", "content": ai_message})
+    # st.session_state["message_history"].append({"role":"assistant", "content": ai_message})
+    
     with st.chat_message("assistant"):
     # Display the AI response
-        st.write(ai_message)
+        ai_message = st.write_stream(
+            message_chunk for message_chunk, metadata in chatbot.stream(
+                {"messages": [HumanMessage(content=input_user)]}, config=CONFIG, stream_mode="messages"
+            ) 
+        )
+        
+        st.session_state["message_history"].append({"role": "assistant", "content": ai_message})
